@@ -1,7 +1,19 @@
 <template>
   <el-card>
+    <el-input
+      v-model="searchKeyword"
+      placeholder="筛选备忘录..."
+      clearable
+      size="large"
+      style="margin-bottom: 16px"
+      @input="handleInput"
+    >
+      <template #prefix>
+        <el-icon><Search /></el-icon>
+      </template>
+    </el-input>
     <el-table
-      :data="memoList"
+      :data="filteredMemoList"
       :default-sort="{ prop: 'id', order: 'descending' }"
       style="width: 100%"
       @row-click="goDetail"
@@ -28,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMemoStore } from '@/stores/memo'
 import { Plus } from '@element-plus/icons-vue'
@@ -38,6 +50,7 @@ document.title = 'Note Home'
 const router = useRouter()
 const memoStore = useMemoStore()
 const memoList = computed(() => memoStore.memoList)
+const searchKeyword = ref('')
 
 onMounted(() => {
   memoStore.fetchMemoList()
@@ -48,6 +61,18 @@ function goDetail(row: any) {
 }
 function deleteMemo(id: string) {
   memoStore.deleteMemo(id)
+}
+
+const filteredMemoList = computed(() => 
+  searchKeyword.value.trim() 
+    ? memoList.value.filter(item => 
+        item.title.toLowerCase().includes(searchKeyword.value.toLowerCase().trim())
+      )
+    : memoList.value
+)
+
+function handleInput(val: string) {
+  searchKeyword.value = val
 }
 </script>
 
